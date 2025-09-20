@@ -1,0 +1,43 @@
+# Ignore everything by default
+*
+
+# Allow only specific files and directories
+!app/
+!app/**
+!laundry_pos.db
+!README.md
+!requirements.txt
+!.gitignore
+
+# Ignore virtual environment files (even though we're allowing specific files above)
+bin/
+lib/
+include/
+lib64
+pyvenv.cfg
+activate
+activate.csh
+activate.fish
+Activate.ps1
+
+# Ignore Python cache files
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.log
