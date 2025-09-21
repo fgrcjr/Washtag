@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
-from app.schemas.order import OrderCreate, OrderUpdate, OrderResponse, OrderResponseWithDetails, OrderStatus
+from app.schemas.order import OrderCreate, OrderUpdate, OrderResponse, OrderResponseWithDetails, OrderStatus, IntegratedOrderCreate, IntegratedOrderResponse
 from app.crud import order as crud_order
 from app.crud import client as crud_client
 from app.crud import category as crud_category
@@ -140,3 +140,43 @@ def delete_order(
     if not success:
         raise HTTPException(status_code=404, detail="Order not found")
     return None
+
+
+# Integrated Order Endpoint for New Client Workflow
+@router.post("/integrated", response_model=IntegratedOrderResponse, status_code=status.HTTP_201_CREATED)
+def create_integrated_order(
+    order: IntegratedOrderCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new order with integrated client handling and price calculation.
+    
+    This endpoint handles the complete workflow:
+    1. Checks if client exists (by contact number), creates if not found
+    2. Validates category exists
+    3. Calculates price based on type and weight:
+       - For predefined types: finds matching price from database
+       - For 'custom' type: uses provided custom_amount
+    4. Creates order with all details
+    5. Returns comprehensive order information including client, category, and pricing details
+    
+    **Pricing Logic:**
+    - **Predefined Types**: System automatically finds the appropriate price based on type and weight
+    - **Custom Type**: Uses the provided custom_amount (required when type_name is 'custom')
+    
+    **Client Handling:**
+    - If client with same contact number exists, uses existing client
+    - If not found, creates new client with provided information
+    """
+    try:
+        return crud_order.create_integrated_order(db=db, order_data=order)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )

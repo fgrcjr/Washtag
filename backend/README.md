@@ -192,6 +192,61 @@ curl -X GET "http://localhost:8000/api/v1/prices/calculate?category_id=1&weight=
 curl -X GET "http://localhost:8000/api/v1/prices/category/1"
 ```
 
+### Creating an integrated order (New Client Workflow)
+```bash
+# For predefined type (automatic price calculation)
+curl -X POST "http://localhost:8000/api/v1/orders/integrated" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "client_name": "John Doe",
+       "client_contact": "12345678901",
+       "client_address": "123 Main St, City, State 12345",
+       "category_id": 1,
+       "type_name": "Clothes",
+       "weight": 3.5,
+       "notes": "Regular wash"
+     }'
+
+# For custom type (manual price)
+curl -X POST "http://localhost:8000/api/v1/orders/integrated" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "client_name": "Jane Smith",
+       "client_contact": "09876543210",
+       "client_address": "456 Oak Ave, City, State 67890",
+       "category_id": 1,
+       "type_name": "Custom",
+       "weight": 5.0,
+       "custom_amount": 250.00,
+       "notes": "Special handling required"
+     }'
+```
+
+## Integrated Order Workflow
+
+The system now supports a complete integrated workflow for new clients through the `/api/v1/orders/integrated` endpoint. This handles the exact scenario you described:
+
+### Workflow Steps:
+1. **New Client Detection**: System checks if client exists by contact number
+2. **Client Creation**: If not found, automatically creates new client
+3. **Category Selection**: Validates the selected category exists
+4. **Price Calculation**: 
+   - **Predefined Types**: Automatically finds matching price based on type and weight
+   - **Custom Type**: Uses provided custom_amount
+5. **Order Creation**: Creates order with all details
+6. **Order Display**: Returns comprehensive order information
+
+### Pricing Logic:
+- **Predefined Types** (e.g., "Clothes", "Bedding"): System automatically selects appropriate price from database based on weight ranges
+- **Custom Type**: Requires `custom_amount` field and uses that value directly
+
+### Response Format:
+The integrated order endpoint returns complete order information including:
+- Order details (ID, status, amount, creation date)
+- Client information (ID, name, contact, address)
+- Category information (ID, name)
+- Pricing details (type, weight, price ID for predefined types)
+
 ## Development
 
 The application uses SQLite as the default database. The database file (`laundry_pos.db`) will be created automatically when you first run the application.
