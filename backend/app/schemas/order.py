@@ -9,16 +9,14 @@ from app.schemas.category import CategoryResponse
 
 
 class OrderStatus(str, Enum):
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
+    PAID = "paid"
+    UNPAID = "unpaid"
 
 
 class OrderBase(BaseModel):
     client_id: int = Field(..., description="Client ID")
     category_id: int = Field(..., description="Category ID")
-    status: OrderStatus = Field(OrderStatus.PENDING, description="Order status")
+    status: OrderStatus = Field(OrderStatus.UNPAID, description="Order payment status")
     total_amount: Optional[float] = Field(None, ge=0, description="Total amount")
     notes: Optional[str] = Field(None, max_length=500, description="Order notes")
 
@@ -30,7 +28,7 @@ class OrderCreate(OrderBase):
 class OrderUpdate(BaseModel):
     client_id: Optional[int] = Field(None, description="Client ID")
     category_id: Optional[int] = Field(None, description="Category ID")
-    status: Optional[OrderStatus] = Field(None, description="Order status")
+    status: Optional[OrderStatus] = Field(None, description="Order payment status")
     total_amount: Optional[float] = Field(None, ge=0, description="Total amount")
     notes: Optional[str] = Field(None, max_length=500, description="Order notes")
 
@@ -71,7 +69,7 @@ class IntegratedOrderCreate(BaseModel):
     
     # Optional order details
     notes: Optional[str] = Field(None, max_length=500, description="Order notes")
-    status: OrderStatus = Field(OrderStatus.PENDING, description="Order status")
+    status: OrderStatus = Field(OrderStatus.UNPAID, description="Order payment status")
     
     @validator('client_contact')
     def validate_contact_number(cls, v):

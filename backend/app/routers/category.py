@@ -1,10 +1,11 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
 from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
 from app.crud import category as crud_category
+from app.utils.validators import validate_entity_exists, validate_operation_success, validate_unique_constraint
 
 router = APIRouter(
     prefix="/categories",
@@ -19,13 +20,8 @@ def create_category(
     db: Session = Depends(get_db)
 ):
     """Create a new category"""
-    # Check if category with this name already exists
     db_category = crud_category.get_category_by_name(db, name=category.name)
-    if db_category:
-        raise HTTPException(
-            status_code=400,
-            detail="Category name already exists"
-        )
+    validate_unique_constraint(db_category is not None, "name", category.name, "Category")
     return crud_category.create_category(db=db, category=category)
 
 
@@ -47,8 +43,7 @@ def read_category(
 ):
     """Get a single category by ID"""
     db_category = crud_category.get_category(db, category_id=category_id)
-    if db_category is None:
-        raise HTTPException(status_code=404, detail="Category not found")
+    validate_entity_exists(db_category, "Category", category_id)
     return db_category
 
 
@@ -59,19 +54,13 @@ def update_category(
     db: Session = Depends(get_db)
 ):
     """Update a category"""
-    # Check if category exists
     db_category = crud_category.get_category(db, category_id=category_id)
-    if db_category is None:
-        raise HTTPException(status_code=404, detail="Category not found")
+    validate_entity_exists(db_category, "Category", category_id)
     
     # Check if name is being updated and if it already exists
     if category.name and category.name != db_category.name:
         existing_category = crud_category.get_category_by_name(db, name=category.name)
-        if existing_category:
-            raise HTTPException(
-                status_code=400,
-                detail="Category name already exists"
-            )
+        validate_unique_constraint(existing_category is not None, "name", category.name, "Category")
     
     updated_category = crud_category.update_category(db=db, category_id=category_id, category=category)
     return updated_category
@@ -84,6 +73,5 @@ def delete_category(
 ):
     """Delete a category"""
     success = crud_category.delete_category(db=db, category_id=category_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Category not found")
+    validate_operation_success(success, "delete", "Category", category_id)
     return None

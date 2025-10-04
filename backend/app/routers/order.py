@@ -142,23 +142,23 @@ def delete_order(
     return None
 
 
-# Integrated Order Endpoint for New Client Workflow
-@router.post("/integrated", response_model=IntegratedOrderResponse, status_code=status.HTTP_201_CREATED)
-def create_integrated_order(
+# Transaction Endpoint for Receipt Generation
+@router.post("/transact", response_model=IntegratedOrderResponse, status_code=status.HTTP_201_CREATED)
+def create_transaction(
     order: IntegratedOrderCreate,
     db: Session = Depends(get_db)
 ):
     """
-    Create a new order with integrated client handling and price calculation.
+    Create a transaction (order with receipt details).
     
-    This endpoint handles the complete workflow:
+    This endpoint handles the complete transaction workflow:
     1. Checks if client exists (by contact number), creates if not found
     2. Validates category exists
     3. Calculates price based on type and weight:
        - For predefined types: finds matching price from database
        - For 'custom' type: uses provided custom_amount
     4. Creates order with all details
-    5. Returns comprehensive order information including client, category, and pricing details
+    5. Returns comprehensive transaction information for receipt generation
     
     **Pricing Logic:**
     - **Predefined Types**: System automatically finds the appropriate price based on type and weight
@@ -167,6 +167,8 @@ def create_integrated_order(
     **Client Handling:**
     - If client with same contact number exists, uses existing client
     - If not found, creates new client with provided information
+    
+    **Use Case**: Frontend uses this to create receipts with complete transaction details
     """
     try:
         return crud_order.create_integrated_order(db=db, order_data=order)

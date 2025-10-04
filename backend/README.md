@@ -192,10 +192,10 @@ curl -X GET "http://localhost:8000/api/v1/prices/calculate?category_id=1&weight=
 curl -X GET "http://localhost:8000/api/v1/prices/category/1"
 ```
 
-### Creating an integrated order (New Client Workflow)
+### Creating a transaction for receipt
 ```bash
 # For predefined type (automatic price calculation)
-curl -X POST "http://localhost:8000/api/v1/orders/integrated" \
+curl -X POST "http://localhost:8000/api/v1/orders/transact" \
      -H "Content-Type: application/json" \
      -d '{
        "client_name": "John Doe",
@@ -208,7 +208,7 @@ curl -X POST "http://localhost:8000/api/v1/orders/integrated" \
      }'
 
 # For custom type (manual price)
-curl -X POST "http://localhost:8000/api/v1/orders/integrated" \
+curl -X POST "http://localhost:8000/api/v1/orders/transact" \
      -H "Content-Type: application/json" \
      -d '{
        "client_name": "Jane Smith",
@@ -222,9 +222,9 @@ curl -X POST "http://localhost:8000/api/v1/orders/integrated" \
      }'
 ```
 
-## Integrated Order Workflow
+## Transaction Workflow for Receipt Generation
 
-The system now supports a complete integrated workflow for new clients through the `/api/v1/orders/integrated` endpoint. This handles the exact scenario you described:
+The system now supports a complete transaction workflow for new clients through the `/api/v1/orders/transact` endpoint. This handles the exact scenario you described and is used by the frontend to generate receipts:
 
 ### Workflow Steps:
 1. **New Client Detection**: System checks if client exists by contact number
@@ -241,7 +241,7 @@ The system now supports a complete integrated workflow for new clients through t
 - **Custom Type**: Requires `custom_amount` field and uses that value directly
 
 ### Response Format:
-The integrated order endpoint returns complete order information including:
+The transaction endpoint returns complete order information including:
 - Order details (ID, status, amount, creation date)
 - Client information (ID, name, contact, address)
 - Category information (ID, name)

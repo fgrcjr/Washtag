@@ -10,7 +10,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
-    status = Column(String(20), default="pending", nullable=False)  # pending, in_progress, completed, cancelled
+    status = Column(String(20), default="unpaid", nullable=False)  # paid, unpaid
     total_amount = Column(Float, nullable=True)
     notes = Column(String(500), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

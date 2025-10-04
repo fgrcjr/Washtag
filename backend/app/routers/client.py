@@ -1,10 +1,11 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
 from app.schemas.client import ClientCreate, ClientUpdate, ClientResponse
 from app.crud import client as crud_client
+from app.utils.validators import validate_entity_exists, validate_operation_success
 
 router = APIRouter(
     prefix="/clients",
@@ -40,8 +41,7 @@ def read_client(
 ):
     """Get a single client by ID"""
     db_client = crud_client.get_client(db, client_id=client_id)
-    if db_client is None:
-        raise HTTPException(status_code=404, detail="Client not found")
+    validate_entity_exists(db_client, "Client", client_id)
     return db_client
 
 
@@ -52,10 +52,8 @@ def update_client(
     db: Session = Depends(get_db)
 ):
     """Update a client"""
-    # Check if client exists
     db_client = crud_client.get_client(db, client_id=client_id)
-    if db_client is None:
-        raise HTTPException(status_code=404, detail="Client not found")
+    validate_entity_exists(db_client, "Client", client_id)
     
     updated_client = crud_client.update_client(db=db, client_id=client_id, client=client)
     return updated_client
@@ -68,6 +66,5 @@ def delete_client(
 ):
     """Delete a client"""
     success = crud_client.delete_client(db=db, client_id=client_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Client not found")
+    validate_operation_success(success, "delete", "Client", client_id)
     return None
